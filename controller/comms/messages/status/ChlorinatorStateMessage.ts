@@ -139,7 +139,7 @@ export class ChlorinatorStateMessage {
                     if (sys.controllerType === ControllerType.Nixie) {
                         // This lets the current body use the iChlor temp probe 
                         let tbody: BodyTempState = sys.pumps.length > 0 ? state.temps.bodies.getBodyIsOn() : state.temps.bodies.getItemById(1, true);
-                        if (msg.extractPayloadByte(2) >= 40 && typeof tbody !== 'undefined') tbody.temp = msg.extractPayloadByte(2);
+                        if (msg.extractPayloadByte(0) >= 40 && typeof tbody !== 'undefined') tbody.temp = msg.extractPayloadByte(0);
                     }
                     state.emitEquipmentChanges();
                     break;

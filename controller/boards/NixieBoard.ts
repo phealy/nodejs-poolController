@@ -118,7 +118,9 @@ export class NixieBoard extends SystemBoard {
             [7, { name: 'aquarite-t5', desc: 'AquaRite T5', capacity: 20000, chlorinePerDay: 0.735, chlorinePerSec: 0.735 / 86400 }],
             [8, { name: 'aquarite-t3', desc: 'AquaRite T3', capacity: 15000, chlorinePerDay: 0.53, chlorinePerSec: 0.53 / 86400 }],
             [9, { name: 'aquarite-925', desc: 'AquaRite 925', capacity: 25000, chlorinePerDay: 0.98, chlorinePerSec: 0.98 / 86400 }],
-            [10, { name: 'aquarite-940', desc: 'AquaRite 940', capacity: 40000, chlorinePerDay: 1.47, chlorinePerSec: 1.47 / 86400 }]
+            [10, { name: 'aquarite-940', desc: 'AquaRite 940', capacity: 40000, chlorinePerDay: 1.47, chlorinePerSec: 1.47 / 86400 }],
+            [11, { name: 'ichlor-30', desc: 'iChlor 30', capacity: 30000, chlorinePerDay: 1.0, chlorinePerSec: 1.0 / 86400 }],
+            [12, { name: 'ichlor-15', desc: 'iChlor 15', capacity: 15000, chlorinePerDay: 0.5, chlorinePerSec: 0.5 / 86400 }]
         ]);
 
 

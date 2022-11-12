@@ -10,6 +10,7 @@ import { webApp, InterfaceServerResponse } from "../../../web/Server";
 import { Outbound, Protocol, Response } from '../../comms/messages/Messages';
 import { conn } from '../../comms/Comms';
 import { ncp } from '../Nixie';
+import { protocol } from 'socket.io-client';
 
 export class NixieChlorinatorCollection extends NixieEquipmentCollection<NixieChlorinator> {
     public async deleteChlorinatorAsync(id: number) {
@@ -218,6 +219,12 @@ export class NixieChlorinator extends NixieEquipment {
                         if (!this.closing) await this.setOutput();
                         if (!this.closing) await utils.sleep(300);
                         if (!this.closing) await this.getModel();
+
+                        // iChlor supports a temperature sensor
+                        //if (this.chlor.model == 11 || this.chlor.model == 12) {
+                        //    if (!this.closing) await utils.sleep(300);
+                        //    if (!this.closing) await this.getOutputAndTemp();
+                        //}
                     }
                 } catch (err) {
                     // We only display an error here if the body is on.  The chlorinator should be powered down when it is not.
@@ -363,7 +370,7 @@ export class NixieChlorinator extends NixieEquipment {
                     action: 17,
                     payload: [cstate.targetOutput],
                     retries: 7, // IntelliCenter tries 8 times to make this happen.
-                    response: Response.create({ protocol: Protocol.Chlorinator, action: 18 }),
+                    response: Response.create({ protocol: Protocol.Chlorinator, action: this.chlor.model == 18 }),
                     onAbort: () => { },
                     onComplete: (err) => {
                         if (err) {
@@ -424,5 +431,40 @@ export class NixieChlorinator extends NixieEquipment {
             }
             else return false;
         } catch (err) { logger.error(`Communication error with Chlorinator ${this.chlor.name} : ${err.message}`); return Promise.reject(err);}
+    }
+
+    public async getOutputAndTemp() {
+        try {
+            // iChlor 30 supports message 21 and 22 to get output and temperature
+            let cstate = state.chlorinators.getItemById(this.chlor.id, true);
+            if (cstate.status !== 128) {
+                // Ask the chlorinator for the temperature.
+                //[16, 2, 80, 21][0][118, 16, 3]
+                let success = await new Promise<boolean>((resolve, reject) => {
+                    if (conn.isPortEnabled(this.chlor.portId || 0)) {
+                        let out = Outbound.create({
+                            portId: this.chlor.portId || 0,
+                            protocol: Protocol.Chlorinator,
+                            //dest: this.chlor.id,
+                            dest: 1,
+                            action: 21,
+                            payload: [0],
+                            retries: 3, // IntelliCenter tries 4 times to get a response.
+                            response: Response.create({ protocol: Protocol.Chlorinator, action: 22 }),
+                            onAbort: () => { },
+                            onComplete: (err) => {
+                                if (err) resolve(false);
+                                else resolve(true);
+                            }
+                        });
+                        conn.queueSendMessage(out);
+                    }
+                    else { resolve(true); }
+                });
+                return success;
+            }
+            else return false;
+        } catch (err) { logger.error(`Communication error with Chlorinator ${this.chlor.name} : ${err.message}`); return Promise.reject(err);}
+    
     }
 }
